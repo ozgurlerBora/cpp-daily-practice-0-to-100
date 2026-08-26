@@ -35,6 +35,7 @@ public:
 };
 class Inventory {
 private:
+    std::string equippedItem= "";
     std::vector <std::unique_ptr<Item>> bag;
 public:
     void addItem(std::string n,std::string c,int p,double w) {
@@ -42,7 +43,11 @@ public:
     }
     void display() {
         for (int i=0;i<bag.size();i++) {
-            std::cout<<bag[i]->getName()<<" has "<<bag[i]->getLevel()<<" damage/defense and weighs  "<<bag[i]->getWeight()
+            if (bag[i]->getName()== equippedItem) {
+                std::cout<<bag[i]->getName()<<" [EQUIPPED] has "<<bag[i]->getLevel()<<" damage/defense and weighs  "<<bag[i]->getWeight()
+<<" and in "<<bag[i]->getCategory()<<" category."<<std::endl;
+            }
+          else  std::cout<<bag[i]->getName()<<" has "<<bag[i]->getLevel()<<" damage/defense and weighs  "<<bag[i]->getWeight()
             <<" and in "<<bag[i]->getCategory()<<" category."<<std::endl;
         }
     }
@@ -56,6 +61,35 @@ public:
             return a->getLevel()>b->getLevel();
         });
     }
+
+    void itemDrop(std::string name) {
+        for (int i=0;i<bag.size();i++) {
+            if (bag[i]->getName()==name) {
+                if (bag[i]->getName()==equippedItem) {
+                    equippedItem="";
+                }
+                bag.erase(bag.begin()+i);
+                std::cout<<name<<" successfully dropped!!"<<std::endl;
+                return;
+            }
+        }
+        std::cout<<"There is no item in the inventory called" << name <<std::endl;
+
+    }
+
+    void equip(std::string name) {
+        for (int i=0;i<bag.size();i++) {
+            if (bag[i]->getName()==name) {
+                equippedItem=name;
+                std::cout<<name<<" Successfully equipped!"<<std::endl;
+                return;
+            }
+        }
+        std::cout<<"Item not found!!!"<<std::endl;
+    }
+
+
+
     void saveGame(std::string filename) {
         std::ofstream outFile(filename);
         if (!outFile.is_open()) {
@@ -96,13 +130,15 @@ int main () {
     a.loadGame("inventory_save_file.txt");
     int choice = 0;
 
-    while (choice!=5) {
+    while (choice!=7) {
         std::cout<<"\n ==== INVENTORY MENU ===="<<std::endl;
         std::cout<<"1. View Inventory"<<std::endl;
         std::cout<<"2. Add new Item"<<std::endl;
         std::cout<<"3. Sort By Power"<<std::endl;
         std::cout<<"4. Sort by Category"<<std::endl;
-        std::cout<<"5. Save and Quit"<<std::endl;
+        std::cout<<"5. Equip an Item"<<std::endl;
+        std::cout<<"6. Drop an Item"<<std::endl;
+        std::cout<<"7. Save and Quit"<<std::endl;
         std::cout<<"Please type what would you like to do"<<std::endl;
         std::cin>>choice;
         if (choice==1) {
@@ -138,6 +174,19 @@ int main () {
             a.display();
         }
         else if (choice==5) {
+            std::string n;
+            std::cout<<"Which item would you like to equip?"<<std::endl;
+            std::getline(std::cin>>std::ws,n);
+            a.equip(n);
+        }
+
+        else if (choice==6) {
+            std::string n;
+            std::cout<<"Which item would you like to drop?"<<std::endl;
+            std::getline(std::cin>>std::ws,n);
+            a.itemDrop(n);
+        }
+        else if (choice==7) {
             a.saveGame("inventory_save_file.txt");
         }
         else {
