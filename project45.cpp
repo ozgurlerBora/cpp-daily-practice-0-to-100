@@ -18,6 +18,36 @@ public:
         cols=c;
         data=std::vector<std::vector<double>>(rows,std::vector<double>(cols,0.0));
     }
+    Matrix (const std::string& filename) {
+        std::ifstream inFile(filename);
+        if (!inFile.is_open()) {
+            throw std::runtime_error("File Error: Could not open file for reading");
+        }
+        inFile>> rows >> cols;
+        data=std::vector<std::vector<double>>(rows,std::vector<double>(cols,0.0));
+        for (int i=0;i<rows;i++) {
+            for (int k=0;k<cols;k++) {
+                inFile>>data[i][k];
+            }
+        }
+        inFile.close();
+    }
+
+    void saveFile(const std::string& filename) const {
+        std::ofstream outFile(filename);
+        if (!outFile.is_open()) {
+            throw std::runtime_error("File Error: Could not open file for writing.");
+        }
+        outFile << rows << " " << cols << std::endl;
+        for (int i =0;i<rows;i++) {
+            for (int k=0;k<cols;k++) {
+                outFile<<data[i][k]<<std::endl;
+            }
+            outFile<<std::endl;
+        }
+        outFile.close();
+    }
+
     void setValue(int r,int c, double val) {
         data[r-1][c-1]=val;
     }
@@ -80,6 +110,18 @@ public:
         }
         return result;
     }
+
+    friend Matrix operator*(double scalar,const Matrix& mat) {
+        Matrix  result(mat.rows,mat.cols);
+        for (int i=0;i<mat.rows;i++) {
+            for  (int k=0;k<mat.cols;k++) {
+                result.data[i][k]=mat.data[i][k]*scalar;
+                
+            }
+        }
+    }
+
+
 };
 int main() {
   /*  Matrix matrix1(2,2);
@@ -118,6 +160,11 @@ int main() {
     catch (const std::invalid_argument& error) {
         std::cout <<"ENGINE WARNING "<<error.what()<<std::endl;
     }
+    A.saveFile("matrix_A_backup.txt");
+    std::cout<<"Matrix  A saved to  disk!"<<std::endl;
+    Matrix G("matrix_A_backup.txt");
+    std::cout<<"!!!!!!! Matrix G (Loaded from file) ~~~~~~"<<std::endl;
+    G.display();
     Matrix At=A.transpose();
     A.display();
     std::cout<<"********* Matrix A Transposed!!!!**********"<<std::endl;
